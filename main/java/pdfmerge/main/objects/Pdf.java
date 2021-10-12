@@ -37,7 +37,7 @@ public class Pdf {
         return paths;
     }
     
-    public void Merge(){
+    public boolean Merge(){
         try{
             SimpleDateFormat sf = new SimpleDateFormat("hms");
             Date date = new Date();
@@ -59,13 +59,9 @@ public class Pdf {
                         InputStream input = new FileInputStream(new File(path));
                         OutputStream output = new FileOutputStream(atalakitott);
                         IConverter msconverter = LocalConverter.builder().build();
-                        /*if(path.contains(".csv")){
-                            converter.convert(input).as(DocumentType.CSV).to(output).as(DocumentType.PDF).execute();   
-                        }else */if(path.contains(".doc")){
+                        if(path.contains(".doc")){
                             msconverter.convert(input).as(DocumentType.DOCX).to(output).as(DocumentType.PDF).execute(); 
-                        }/*else if(path.contains(".xls")){
-                            converter.convert(input).as(DocumentType.XLS).to(output).as(DocumentType.PDF).execute(); 
-                        }*/else if(path.contains(".ppt")){
+                        }else if(path.contains(".ppt")){
                             Converter pptconverter = new Converter(path);
                             PdfConvertOptions options = new PdfConvertOptions();
                             pptconverter.convert(fajlNeve, options);
@@ -76,12 +72,14 @@ public class Pdf {
                         path = fajlNeve;
                     } catch (IOException ex) {
                         System.out.println(ex.getMessage());
+                        return false;
                     }   
                 }
                 
                 PdfMerge.addSource(path);
             }
-            PdfMerge.setDestinationFileName("osszefuzott"+sf.format(date)+".pdf");
+            String mFName = "osszefuzott"+sf.format(date)+".pdf";
+            PdfMerge.setDestinationFileName(mFName);
             
             PdfMerge.mergeDocuments(null);
             
@@ -91,8 +89,22 @@ public class Pdf {
                 }
             }
             
+            int db = 0;
+            for(File file : atalakitottFileok){
+                if(!file.exists()){
+                    db++;
+                }
+            }
+            File file = new File(mFName);
+            if(db == atalakitottFileok.size() && file.exists()){
+                return true;
+            }
+            
+            return false;
+            
         }catch(IOException e){
             System.err.println(e);
+            return false;
         }
     }
     
